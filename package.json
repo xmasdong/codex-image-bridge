@@ -1,0 +1,20 @@
+{
+  "name": "codex-image-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone Codex app-server image generation bridge.",
+  "bin": {
+    "codex-image": "./src/cli.js"
+  },
+  "scripts": {
+    "auth": "node src/cli.js auth",
+    "generate": "node src/cli.js generate",
+    "serve": "node src/cli.js serve",
+    "mcp": "node src/mcp-server.js",
+    "check": "node --check src/codex-app-server.js && node --check src/image-service.js && node --check src/server.js && node --check src/cli.js && node --check src/mcp-server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

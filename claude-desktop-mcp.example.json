@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "codex-image-bridge": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/codex-image-bridge/src/mcp-server.js"
+      ],
+      "env": {
+        "CODEX_IMAGE_TIMEOUT_MS": "120000",
+        "CODEX_IMAGE_OUTPUT_DIR": "outputs"
+      }
+    }
+  }
+}

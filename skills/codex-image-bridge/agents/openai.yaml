@@ -1,0 +1,3 @@
+display_name: Codex Image Bridge
+short_description: Generate local PNGs through Codex app-server auth.
+default_prompt: Check Codex app-server auth, then generate a PNG image from my prompt and save it under outputs/.
