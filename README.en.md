@@ -164,3 +164,9 @@ Key variables:
 ## Notes
 
 This bridge depends on a working Codex / ChatGPT login on the current machine. It is not an OpenAI API key wrapper and does not expose or persist auth tokens.
+
+## License and Disclaimer
+
+This project is released under the [MIT License](LICENSE).
+
+This is an independent open source project. It is not an official OpenAI product and is not endorsed by OpenAI. Users are responsible for complying with applicable service terms, policies, usage limits, third-party rights, platform rules, and local laws related to generated content. See [DISCLAIMER.md](DISCLAIMER.md) for the full disclaimer.

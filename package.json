@@ -2,6 +2,7 @@
   "name": "codex-image-bridge",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Standalone Codex app-server image generation bridge.",
   "bin": {

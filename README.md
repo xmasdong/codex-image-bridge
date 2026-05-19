@@ -160,3 +160,9 @@ console.log(result.filePath);
 ## 注意
 
 这个桥接层依赖当前机器已经登录 Codex / ChatGPT。它不是 OpenAI API Key 封装，也不会绕过 Codex 授权。
+
+## 开源协议与免责声明
+
+本项目使用 [MIT License](LICENSE) 开源。
+
+本项目是独立开源项目，不是 OpenAI 官方产品，也不代表 OpenAI 背书。使用者需要自行遵守相关服务条款、政策、使用限制，以及生成内容可能涉及的第三方权利、平台规则和当地法律。完整免责声明见 [DISCLAIMER.md](DISCLAIMER.md)。
