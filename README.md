@@ -8,6 +8,7 @@
 
 - 检查 Codex 托管授权是否可用
 - 通过 Codex app-server 发起图片生成
+- 以本地母图为视觉参考，生成编辑后的新 PNG
 - 把返回的 PNG base64 保存成本地文件
 - 提供 JS SDK、CLI、HTTP API、MCP Server 和自包含 Claude/agent skill
 
@@ -18,6 +19,7 @@ cd codex-image-bridge
 npm run check
 npm run auth
 node src/cli.js generate --prompt "Full body demon silhouette, transparent background, no text" --out outputs/demon.png
+node src/cli.js edit --image outputs/demon.png --prompt "Keep the same identity and silhouette, only raise both wings slightly" --out outputs/demon-frame-02.png
 ```
 
 启动 HTTP 服务：
@@ -56,6 +58,14 @@ curl -X POST http://127.0.0.1:4020/images/generate \
   -d '{"prompt":"Full body demon silhouette, transparent background, no text","filename":"demon.png"}'
 ```
 
+以母图为参考生成编辑图：
+
+```bash
+curl -X POST http://127.0.0.1:4020/images/edit \
+  -H 'Content-Type: application/json' \
+  -d '{"imagePath":"outputs/demon.png","prompt":"Keep the same identity and silhouette, only raise both wings slightly","filename":"demon-frame-02.png"}'
+```
+
 返回结果会包含：
 
 - `filePath`: 保存后的 PNG 路径
@@ -77,6 +87,27 @@ curl -X POST http://127.0.0.1:4020/images/generate \
 - 只有明确需要覆盖 Codex 对话模型时，才传 `--thread-model`、HTTP/MCP 字段 `threadModel`，或设置 `CODEX_THREAD_MODEL`
 - `--model` / `model` / `CODEX_IMAGE_MODEL` 只是旧版兼容别名，不推荐继续使用
 
+## 母图编辑
+
+`edit` 会把本地图片路径作为 `localImage` 输入传给 Codex，再配合文本 prompt 生成新的 PNG。它适合做母图驱动的素材迭代，例如：
+
+- 保持角色身份、轮廓和画风，只改变翅膀、手、尾巴等局部姿态
+- 基于同一母图生成动画关键帧
+- 对生成图做二次修正，例如清理边缘、调整构图、统一透明背景
+
+CLI 示例：
+
+```bash
+node src/cli.js edit \
+  --image outputs/demon.png \
+  --prompt "Keep the same character identity, silhouette, palette, and transparent background. Only move the wing tips upward slightly." \
+  --out outputs/demon-frame-02.png
+```
+
+HTTP 使用 `POST /images/edit`，MCP 使用 `codex_edit_image`。
+
+注意：这是一条“以母图作为视觉参考重新生成”的链路，不是逐像素原地修改，也不是带 mask 的局部重绘。它适合做母图驱动的变体和动画关键帧；如果需要严格锁定骨架或局部区域，后续还需要再叠加 mask、分层或骨架约束工作流。
+
 ## MCP Server
 
 本项目内置一个零依赖 MCP stdio server：
@@ -89,6 +120,7 @@ npm run mcp
 
 - `codex_auth_status`: 检查 Codex app-server 是否能读到当前账号
 - `codex_generate_image`: 生成一张 PNG 并保存到本地
+- `codex_edit_image`: 以本地母图为参考生成编辑后的 PNG
 
 Claude Desktop / 其它 MCP 客户端可参考：
 
@@ -143,6 +175,13 @@ const result = await generateImageFile({
   outputPath: "outputs/monster.png"
 });
 console.log(result.filePath);
+
+const edited = await generateImageFile({
+  imagePath: "outputs/monster.png",
+  prompt: "Keep the same monster, only curl the tail slightly upward",
+  outputPath: "outputs/monster-frame-02.png"
+});
+console.log(edited.filePath);
 ```
 
 ## 环境变量

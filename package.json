@@ -11,6 +11,7 @@
   "scripts": {
     "auth": "node src/cli.js auth",
     "generate": "node src/cli.js generate",
+    "edit": "node src/cli.js edit",
     "serve": "node src/cli.js serve",
     "mcp": "node src/mcp-server.js",
     "check": "node --check src/codex-app-server.js && node --check src/image-service.js && node --check src/server.js && node --check src/cli.js && node --check src/mcp-server.js"

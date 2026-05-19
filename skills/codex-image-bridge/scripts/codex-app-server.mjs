@@ -1,4 +1,6 @@
 import { spawn } from "node:child_process";
+import { access } from "node:fs/promises";
+import { resolve } from "node:path";
 
 export async function readCodexAuthStatus(options = {}) {
   const status = await readCodexAuthTokenStatus({ ...options, includeToken: true });
@@ -97,11 +99,7 @@ export async function generateCodexImage(prompt, options = {}) {
 
     await client.request("turn/start", {
       threadId: thread.thread.id,
-      input: [{
-        type: "text",
-        text: prompt,
-        text_elements: [],
-      }],
+      input: await buildTurnInput(prompt, options),
       effort: options.effort ?? "low",
     });
 
@@ -116,6 +114,36 @@ export async function generateCodexImage(prompt, options = {}) {
   } finally {
     client.close();
   }
+}
+
+async function buildTurnInput(prompt, options) {
+  const input = [];
+  const imagePaths = normalizeImagePaths(options);
+  for (const imagePath of imagePaths) {
+    const absolutePath = resolve(String(imagePath));
+    await access(absolutePath);
+    input.push({
+      type: "localImage",
+      path: absolutePath,
+    });
+  }
+  input.push({
+    type: "text",
+    text: prompt,
+    text_elements: [],
+  });
+  return input;
+}
+
+function normalizeImagePaths(options) {
+  const paths = [];
+  if (options.imagePath) {
+    paths.push(options.imagePath);
+  }
+  if (Array.isArray(options.imagePaths)) {
+    paths.push(...options.imagePaths);
+  }
+  return paths.filter(Boolean);
 }
 
 export class CodexAppServerClient {

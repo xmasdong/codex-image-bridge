@@ -32,6 +32,28 @@ try {
       effort: args.effort,
     });
     writeJson({ image: result });
+  } else if (command === "edit") {
+    const prompt = args.prompt ?? args.p;
+    const imagePath = args.image ?? args.imagePath ?? args.input;
+    if (!prompt) {
+      throw new Error("缺少 --prompt");
+    }
+    if (!imagePath) {
+      throw new Error("缺少 --image");
+    }
+    const result = await generateImageFile({
+      prompt,
+      imagePath,
+      outputPath: args.out,
+      outputDir: args.outputDir,
+      filename: args.filename,
+      cwd: args.cwd,
+      threadModel: args.threadModel ?? args.model,
+      timeoutMs: args.timeoutMs,
+      command: args.command,
+      effort: args.effort,
+    });
+    writeJson({ image: result });
   } else if (command === "serve") {
     const { host, port } = await startServer({
       host: args.host,
@@ -84,10 +106,12 @@ function printHelp() {
 用法:
   node src/cli.js auth
   node src/cli.js generate --prompt "Full body demon, transparent background" --out outputs/demon.png
+  node src/cli.js edit --image inputs/mother.png --prompt "Keep identity, raise both wings slightly" --out outputs/frame-02.png
   node src/cli.js serve --port 4020
 
 常用参数:
   --prompt       生图提示词
+  --image        母图路径，配合 edit 使用
   --out          输出 PNG 文件路径
   --filename     输出文件名，配合 --output-dir 使用
   --output-dir   输出目录，默认 outputs

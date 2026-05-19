@@ -65,6 +65,25 @@ async function route(request, response, options) {
     return;
   }
 
+  if (request.method === "POST" && url.pathname === "/images/edit") {
+    const body = await readJson(request);
+    const result = await generateImageFile({
+      prompt: body.prompt,
+      imagePath: body.imagePath ?? body.image,
+      imagePaths: body.imagePaths,
+      filename: body.filename,
+      outputDir: body.outputDir ?? options.outputDir,
+      outputPath: body.outputPath,
+      cwd: body.cwd ?? options.cwd,
+      threadModel: body.threadModel ?? body.model ?? options.threadModel ?? options.model,
+      timeoutMs: body.timeoutMs ?? options.timeoutMs,
+      command: body.command ?? options.command,
+      effort: body.effort,
+    });
+    sendJson(response, 201, { image: result });
+    return;
+  }
+
   sendJson(response, 404, {
     error: {
       message: "Not found",

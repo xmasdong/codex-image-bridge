@@ -70,6 +70,58 @@ const tools = [
       additionalProperties: false,
     },
   },
+  {
+    name: "codex_edit_image",
+    description: "Edit or reinterpret a PNG image using a source image as visual reference through Codex app-server.",
+    inputSchema: {
+      type: "object",
+      required: ["prompt", "imagePath"],
+      properties: {
+        prompt: {
+          type: "string",
+          description: "Editing prompt. Describe what should change and what must stay consistent.",
+        },
+        imagePath: {
+          type: "string",
+          description: "Local source image path used as the visual reference.",
+        },
+        filename: {
+          type: "string",
+          description: "Output filename under outputDir. Defaults to a timestamped PNG.",
+        },
+        outputDir: {
+          type: "string",
+          description: "Directory where the PNG should be saved. Defaults to outputs.",
+        },
+        outputPath: {
+          type: "string",
+          description: "Exact output PNG path. Overrides filename/outputDir.",
+        },
+        threadModel: {
+          type: "string",
+          description: "Optional Codex thread/start model. Defaults to CODEX_THREAD_MODEL or gpt-5.5.",
+        },
+        model: {
+          type: "string",
+          description: "Deprecated alias for threadModel.",
+        },
+        timeoutMs: {
+          type: "number",
+          description: "Generation timeout in milliseconds.",
+        },
+        cwd: {
+          type: "string",
+          description: "Working directory passed to Codex thread/start.",
+        },
+        effort: {
+          type: "string",
+          description: "Codex turn effort. Defaults to low.",
+          enum: ["low", "medium", "high"],
+        },
+      },
+      additionalProperties: false,
+    },
+  },
 ];
 
 async function handleMessage(message) {
@@ -136,6 +188,21 @@ async function callTool(name, args) {
   if (name === "codex_generate_image") {
     const image = await generateImageFile({
       prompt: args.prompt,
+      filename: args.filename,
+      outputDir: args.outputDir,
+      outputPath: args.outputPath,
+      cwd: args.cwd,
+      threadModel: args.threadModel ?? args.model,
+      timeoutMs: args.timeoutMs,
+      effort: args.effort,
+    });
+    return textResult({ image });
+  }
+
+  if (name === "codex_edit_image") {
+    const image = await generateImageFile({
+      prompt: args.prompt,
+      imagePath: args.imagePath,
       filename: args.filename,
       outputDir: args.outputDir,
       outputPath: args.outputPath,

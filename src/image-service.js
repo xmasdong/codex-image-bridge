@@ -16,6 +16,8 @@ export async function generateImageFile(options = {}) {
     command: options.command,
     cwd: options.cwd,
     effort: options.effort,
+    imagePath: options.imagePath,
+    imagePaths: options.imagePaths,
     threadModel: options.threadModel ?? options.model,
     timeoutMs: options.timeoutMs,
   });

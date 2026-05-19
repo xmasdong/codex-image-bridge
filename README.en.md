@@ -10,6 +10,7 @@ It uses the managed Codex Desktop / ChatGPT login on the current machine. It doe
 
 - Checks whether the managed Codex / ChatGPT auth state is available
 - Starts image generation through Codex app-server
+- Uses a local source image as visual reference to generate an edited PNG
 - Saves the returned PNG base64 payload to a local file
 - Provides a JS SDK, CLI, HTTP API, MCP server, and self-contained Claude/agent skill
 
@@ -20,6 +21,7 @@ cd codex-image-bridge
 npm run check
 npm run auth
 node src/cli.js generate --prompt "Full body demon silhouette, transparent background, no text" --out outputs/demon.png
+node src/cli.js edit --image outputs/demon.png --prompt "Keep the same identity and silhouette, only raise both wings slightly" --out outputs/demon-frame-02.png
 ```
 
 Start the HTTP server:
@@ -58,6 +60,14 @@ curl -X POST http://127.0.0.1:4020/images/generate \
   -d '{"prompt":"Full body demon silhouette, transparent background, no text","filename":"demon.png"}'
 ```
 
+Generate an edited image from a source image:
+
+```bash
+curl -X POST http://127.0.0.1:4020/images/edit \
+  -H 'Content-Type: application/json' \
+  -d '{"imagePath":"outputs/demon.png","prompt":"Keep the same identity and silhouette, only raise both wings slightly","filename":"demon-frame-02.png"}'
+```
+
 The response includes:
 
 - `filePath`: saved PNG path
@@ -81,6 +91,27 @@ Recommended usage:
 - Override the conversation model only when you explicitly need to, using `--thread-model`, HTTP/MCP field `threadModel`, or `CODEX_THREAD_MODEL`
 - `--model`, `model`, and `CODEX_IMAGE_MODEL` are deprecated compatibility aliases
 
+## Source Image Editing
+
+`edit` sends a local image path as a `localImage` input to Codex, together with the text prompt, then saves the returned PNG. It is intended for source-image-driven asset iteration, such as:
+
+- Keeping character identity, silhouette, and style while changing only wings, hands, tail, or other local pose details
+- Generating keyframes from the same mother image
+- Refining generated images by cleaning edges, adjusting composition, or preserving a transparent background
+
+CLI example:
+
+```bash
+node src/cli.js edit \
+  --image outputs/demon.png \
+  --prompt "Keep the same character identity, silhouette, palette, and transparent background. Only move the wing tips upward slightly." \
+  --out outputs/demon-frame-02.png
+```
+
+HTTP uses `POST /images/edit`. MCP uses `codex_edit_image`.
+
+Note: this is a "regenerate from a source image reference" workflow. It is not pixel-level in-place editing and does not provide masked inpainting yet. It is useful for source-image-driven variants and animation keyframes; strict skeleton locking or local-region control would require a future mask, layer, or rig constraint workflow.
+
 ## MCP Server
 
 The project includes a zero-dependency MCP stdio server:
@@ -93,6 +124,7 @@ It exposes two tools:
 
 - `codex_auth_status`: checks whether Codex app-server can read the current account
 - `codex_generate_image`: generates one PNG and saves it locally
+- `codex_edit_image`: generates an edited PNG using a local source image as visual reference
 
 Example Claude Desktop / MCP client config:
 
@@ -147,6 +179,13 @@ const result = await generateImageFile({
   outputPath: "outputs/monster.png"
 });
 console.log(result.filePath);
+
+const edited = await generateImageFile({
+  imagePath: "outputs/monster.png",
+  prompt: "Keep the same monster, only curl the tail slightly upward",
+  outputPath: "outputs/monster-frame-02.png"
+});
+console.log(edited.filePath);
 ```
 
 ## Environment Variables
