@@ -9,6 +9,7 @@ try {
   if (command === "auth") {
     const status = await getAuthStatus({
       command: args.command,
+      timeoutMs: args.timeoutMs,
       refreshToken: args.refreshToken !== "false",
     });
     writeJson({
@@ -30,6 +31,8 @@ try {
       timeoutMs: args.timeoutMs,
       command: args.command,
       effort: args.effort,
+      sandbox: args.sandbox,
+      acceptToolImages: args.acceptToolImages === "true",
     });
     writeJson({ image: result });
   } else if (command === "edit") {
@@ -52,6 +55,8 @@ try {
       timeoutMs: args.timeoutMs,
       command: args.command,
       effort: args.effort,
+      sandbox: args.sandbox,
+      acceptToolImages: args.acceptToolImages === "true",
     });
     writeJson({ image: result });
   } else if (command === "serve") {
@@ -63,6 +68,7 @@ try {
       threadModel: args.threadModel ?? args.model,
       timeoutMs: args.timeoutMs,
       command: args.command,
+      sandbox: args.sandbox,
     });
     console.log(`Codex Image Bridge listening on http://${host}:${port}`);
   } else {
@@ -104,10 +110,10 @@ function printHelp() {
   console.log(`Codex Image Bridge
 
 用法:
-  node scripts/cli.mjs auth
-  node scripts/cli.mjs generate --prompt "Full body demon, transparent background" --out outputs/demon.png
-  node scripts/cli.mjs edit --image inputs/mother.png --prompt "Keep identity, raise both wings slightly" --out outputs/frame-02.png
-  node scripts/cli.mjs serve --port 4020
+  node src/cli.js auth
+  node src/cli.js generate --prompt "Full body demon, transparent background" --out outputs/demon.png
+  node src/cli.js edit --image inputs/mother.png --prompt "Keep identity, raise both wings slightly" --out outputs/frame-02.png
+  node src/cli.js serve --port 4020
 
 常用参数:
   --prompt       生图提示词
@@ -118,6 +124,7 @@ function printHelp() {
   --thread-model Codex 对话/thread 模型；默认 CODEX_THREAD_MODEL 或 gpt-5.5
   --model        旧参数名，等同于 --thread-model
   --timeout-ms   生图超时毫秒数
+  --sandbox      Codex thread 沙盒，默认 danger-full-access，用来匹配 Codex App 原生生图链路
   --command      Codex CLI 命令，默认 codex
 `);
 }

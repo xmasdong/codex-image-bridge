@@ -87,6 +87,22 @@ curl -X POST http://127.0.0.1:4020/images/edit \
 - 只有明确需要覆盖 Codex 对话模型时，才传 `--thread-model`、HTTP/MCP 字段 `threadModel`，或设置 `CODEX_THREAD_MODEL`
 - `--model` / `model` / `CODEX_IMAGE_MODEL` 只是旧版兼容别名，不推荐继续使用
 
+## 当前生图链路
+
+`auth` 成功只代表 Codex app-server 可以读到当前托管登录态，不等于已经完成了一次图片生成验证。
+
+bridge 默认按 Codex Desktop 自己的生图线程方式启动：`danger-full-access` 沙盒、`threadSource: "user"`、`friendly` personality，并从 app-server 通知里接收原生 `imageGeneration` / `image_generation_call` 结果。Codex App 自己也会把同一张生成图保存到 `~/.codex/generated_images/<threadId>/ig_*.png`，bridge 会把这个 `savedPath` 放进返回结果的 `codex.savedPath`。
+
+当前 bridge 默认仍然是严格模式：只接受 Codex 原生 `image_generation_call` / `imageGeneration`，或明确的内置 `image_gen` 工具输出。如果环境没有暴露原生生图能力，命令会明确失败，例如：
+
+```text
+Codex app-server is reachable, but native image generation / built-in image_gen is unavailable in this app-server turn.
+```
+
+可以显式加 `--accept-tool-images true` 或设置 `CODEX_IMAGE_ACCEPT_TOOL_IMAGES=1` 接收其它工具返回的 PNG，但这只适合诊断或占位，不应当当作生产级模型生图能力。返回结果里的 `codex.source` 会标明来源；如果看到 `mcp__node_repl/js`，说明它是工具/代码 fallback，不是原生图片模型生成。
+
+如果你需要诊断沙盒差异，可以传 `--sandbox read-only` / `--sandbox workspace-write` / `--sandbox danger-full-access`，或设置 `CODEX_IMAGE_SANDBOX`。默认不要改，除非你在验证 app-server 行为。
+
 ## 母图编辑
 
 `edit` 会把本地图片路径作为 `localImage` 输入传给 Codex，再配合文本 prompt 生成新的 PNG。它适合做母图驱动的素材迭代，例如：
@@ -190,9 +206,13 @@ console.log(edited.filePath);
 
 关键变量：
 
-- `CODEX_IMAGE_COMMAND`: Codex CLI 命令，默认 `codex`
+- `CODEX_APP_SERVER_COMMAND`: Codex app-server 命令。默认会优先使用 macOS Codex Desktop 自带二进制，其次使用 `$HOME/.codex/plugins/.plugin-appserver/codex`，最后才回退到 PATH 里的 `codex`
+- `CODEX_IMAGE_COMMAND`: 旧变量名，仍可覆盖 Codex app-server 命令
 - `CODEX_THREAD_MODEL`: Codex 对话 / thread 模型，默认 `gpt-5.5`。它不是生图模型
+- `CODEX_IMAGE_SANDBOX`: Codex thread 沙盒，默认 `danger-full-access`，用于匹配 Codex Desktop 原生生图链路
 - `CODEX_IMAGE_TIMEOUT_MS`: 生图超时，默认 120 秒
+- `CODEX_IMAGE_APP_SERVER_TIMEOUT_MS`: app-server 单次请求超时，默认 30 秒
+- `CODEX_IMAGE_ACCEPT_TOOL_IMAGES`: 设为 `1` 时允许接收非原生工具返回的图片。默认关闭
 - `CODEX_IMAGE_PORT`: HTTP 服务端口，默认 4020
 - `CODEX_IMAGE_OUTPUT_DIR`: 生成 PNG 文件的默认输出目录
 

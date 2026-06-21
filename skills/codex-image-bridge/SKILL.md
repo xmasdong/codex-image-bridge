@@ -35,6 +35,8 @@ node scripts/cli.mjs auth
 
 `auth` is usable if it returns a current `account`. `tokenPresent` may be `false`; that only means Codex app-server did not expose the token field. It does not necessarily block image generation.
 
+Important: auth success only verifies the managed login. The bundled scripts start an app-like Codex Desktop thread (`danger-full-access`, `threadSource: "user"`, `friendly`) and default to strict mode: accept only native `image_generation_call` / `imageGeneration`, or explicit built-in `image_gen` output. If native generation is unavailable, report that clearly instead of treating tool/code output as success.
+
 ## Generate One Image
 
 ```bash
@@ -44,6 +46,8 @@ node scripts/cli.mjs generate \
 ```
 
 Return the generated `filePath`, image dimensions, and any important `codex.revisedPrompt`.
+
+On success, check `codex.source`; it should normally be `imageGeneration` or `image_generation_call`. `codex.savedPath` points to the original file saved by Codex Desktop under `~/.codex/generated_images/...` when app-server provides it. For diagnostics only, `--accept-tool-images true` or `CODEX_IMAGE_ACCEPT_TOOL_IMAGES=1` can accept other tool-returned PNGs, but `mcp__node_repl/js` means a tool/code fallback, not native model image generation.
 
 ## Edit From A Source Image
 
@@ -107,4 +111,5 @@ Prefer MCP when the host client can call tools directly. Prefer CLI for quick lo
 
 - Do not read or print local Codex token files.
 - Do not claim `tokenPresent=false` means generation is impossible; perform a small generation test if needed.
+- Do not claim a non-native tool image is a successful production model generation. Check `codex.source`.
 - Generated files go to `outputs/` by default.

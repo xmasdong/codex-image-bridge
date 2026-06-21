@@ -20,6 +20,8 @@ export async function generateImageFile(options = {}) {
     imagePaths: options.imagePaths,
     threadModel: options.threadModel ?? options.model,
     timeoutMs: options.timeoutMs,
+    sandbox: options.sandbox,
+    acceptToolImages: options.acceptToolImages,
   });
   const bytes = Buffer.from(generated.resultBase64, "base64");
   const dimensions = readPngDimensions(bytes);
@@ -42,8 +44,10 @@ export async function generateImageFile(options = {}) {
       imageId: generated.imageId,
       status: generated.status,
       revisedPrompt: generated.revisedPrompt,
+      savedPath: generated.savedPath,
       model: generated.model,
       modelProvider: generated.modelProvider,
+      source: generated.source,
     },
   };
 }

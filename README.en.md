@@ -91,6 +91,22 @@ Recommended usage:
 - Override the conversation model only when you explicitly need to, using `--thread-model`, HTTP/MCP field `threadModel`, or `CODEX_THREAD_MODEL`
 - `--model`, `model`, and `CODEX_IMAGE_MODEL` are deprecated compatibility aliases
 
+## Current Image Generation Path
+
+A successful `auth` check only means Codex app-server can read the current managed login. It is not the same as completing a generation test.
+
+By default, the bridge starts an app-like Codex Desktop image thread: `danger-full-access` sandbox, `threadSource: "user"`, and `friendly` personality. It reads native `imageGeneration` / `image_generation_call` results from app-server notifications. Codex Desktop also saves the generated image under `~/.codex/generated_images/<threadId>/ig_*.png`; the bridge returns that path as `codex.savedPath` when app-server provides it.
+
+The bridge still runs in strict mode. It only accepts native Codex `image_generation_call` / `imageGeneration` results, or an explicit built-in `image_gen` output. If the environment does not expose native image generation, the command fails clearly, for example:
+
+```text
+Codex app-server is reachable, but native image generation / built-in image_gen is unavailable in this app-server turn.
+```
+
+You can pass `--accept-tool-images true` or set `CODEX_IMAGE_ACCEPT_TOOL_IMAGES=1` to accept PNGs returned by other tools, but this is intended for diagnostics or placeholders, not production model image generation. The response includes `codex.source`; if it says `mcp__node_repl/js`, the image came from a tool/code fallback rather than the native image model.
+
+For sandbox diagnostics, use `--sandbox read-only` / `--sandbox workspace-write` / `--sandbox danger-full-access`, or set `CODEX_IMAGE_SANDBOX`. Leave the default unchanged unless you are testing app-server behavior.
+
 ## Source Image Editing
 
 `edit` sends a local image path as a `localImage` input to Codex, together with the text prompt, then saves the returned PNG. It is intended for source-image-driven asset iteration, such as:
@@ -194,9 +210,13 @@ Use `.env.example` as a reference. This project does not automatically load `.en
 
 Key variables:
 
-- `CODEX_IMAGE_COMMAND`: Codex CLI command, defaults to `codex`
+- `CODEX_APP_SERVER_COMMAND`: Codex app-server command. By default, the bridge prefers the macOS Codex Desktop bundled binary, then `$HOME/.codex/plugins/.plugin-appserver/codex`, then PATH `codex`
+- `CODEX_IMAGE_COMMAND`: legacy command override, still supported
 - `CODEX_THREAD_MODEL`: Codex conversation / thread model, defaults to `gpt-5.5`. This is not an image generation model
+- `CODEX_IMAGE_SANDBOX`: Codex thread sandbox, defaults to `danger-full-access` to match the Codex Desktop native image generation path
 - `CODEX_IMAGE_TIMEOUT_MS`: image generation timeout, defaults to 120 seconds
+- `CODEX_IMAGE_APP_SERVER_TIMEOUT_MS`: per app-server request timeout, defaults to 30 seconds
+- `CODEX_IMAGE_ACCEPT_TOOL_IMAGES`: set to `1` to accept non-native tool image outputs. Disabled by default
 - `CODEX_IMAGE_PORT`: HTTP server port, defaults to 4020
 - `CODEX_IMAGE_OUTPUT_DIR`: default output folder for generated PNG files
 

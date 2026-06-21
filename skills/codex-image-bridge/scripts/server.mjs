@@ -60,6 +60,8 @@ async function route(request, response, options) {
       timeoutMs: body.timeoutMs ?? options.timeoutMs,
       command: body.command ?? options.command,
       effort: body.effort,
+      sandbox: body.sandbox ?? options.sandbox,
+      acceptToolImages: body.acceptToolImages ?? options.acceptToolImages,
     });
     sendJson(response, 201, { image: result });
     return;
@@ -79,6 +81,8 @@ async function route(request, response, options) {
       timeoutMs: body.timeoutMs ?? options.timeoutMs,
       command: body.command ?? options.command,
       effort: body.effort,
+      sandbox: body.sandbox ?? options.sandbox,
+      acceptToolImages: body.acceptToolImages ?? options.acceptToolImages,
     });
     sendJson(response, 201, { image: result });
     return;

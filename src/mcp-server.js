@@ -66,6 +66,15 @@ const tools = [
           description: "Codex turn effort. Defaults to low.",
           enum: ["low", "medium", "high"],
         },
+        sandbox: {
+          type: "string",
+          description: "Codex thread sandbox. Defaults to danger-full-access to match Codex Desktop native image generation behavior.",
+          enum: ["read-only", "workspace-write", "danger-full-access"],
+        },
+        acceptToolImages: {
+          type: "boolean",
+          description: "Accept image data returned by non-native tools. Disabled by default because it can be procedural fallback rather than native model image generation.",
+        },
       },
       additionalProperties: false,
     },
@@ -117,6 +126,15 @@ const tools = [
           type: "string",
           description: "Codex turn effort. Defaults to low.",
           enum: ["low", "medium", "high"],
+        },
+        sandbox: {
+          type: "string",
+          description: "Codex thread sandbox. Defaults to danger-full-access to match Codex Desktop native image generation behavior.",
+          enum: ["read-only", "workspace-write", "danger-full-access"],
+        },
+        acceptToolImages: {
+          type: "boolean",
+          description: "Accept image data returned by non-native tools. Disabled by default because it can be procedural fallback rather than native model image generation.",
         },
       },
       additionalProperties: false,
@@ -195,6 +213,8 @@ async function callTool(name, args) {
       threadModel: args.threadModel ?? args.model,
       timeoutMs: args.timeoutMs,
       effort: args.effort,
+      sandbox: args.sandbox,
+      acceptToolImages: args.acceptToolImages,
     });
     return textResult({ image });
   }
@@ -210,6 +230,8 @@ async function callTool(name, args) {
       threadModel: args.threadModel ?? args.model,
       timeoutMs: args.timeoutMs,
       effort: args.effort,
+      sandbox: args.sandbox,
+      acceptToolImages: args.acceptToolImages,
     });
     return textResult({ image });
   }
